@@ -461,7 +461,7 @@ export default function App() {
                                     {/* Mul Point */}
                                     <td style={{ padding: "10px 12px" }}>
                                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                            <div className={mul >= 4 ? "mul-badge-4x" : ""} style={{
+                                            <div style={{
                                                 background: mulColor + "22",
                                                 color: mulColor,
                                                 border: `1px solid ${mulColor}66`,
@@ -469,7 +469,6 @@ export default function App() {
                                                 fontSize: 15, fontWeight: 700,
                                                 display: "inline-block"
                                             }}>{mul}x</div>
-                                            {mul >= 4 && <PulsingDot color={mulColor} />}
                                         </div>
                                     </td>
 
