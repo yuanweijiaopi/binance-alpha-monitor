@@ -11,10 +11,12 @@ const CORS_PROXIES = [
 ];
 
 async function fetchWithProxy(url) {
+    // 加时间戳绕过代理缓存
+    const bustUrl = `${url}${url.includes("?") ? "&" : "?"}_t=${Date.now()}`;
     let lastErr;
     for (const makeProxy of CORS_PROXIES) {
         try {
-            const res = await fetch(makeProxy(url), { signal: AbortSignal.timeout(10000) });
+            const res = await fetch(makeProxy(bustUrl), { signal: AbortSignal.timeout(10000) });
             if (!res.ok) continue;
             const text = await res.text();
             const json = JSON.parse(text);
@@ -77,10 +79,12 @@ export default function App() {
     const [countdown, setCountdown] = useState(5);
     const [filterMul, setFilterMul] = useState(4);
     const [sortBy, setSortBy] = useState("volume");
+    const [search, setSearch] = useState("");
     const [newTokenIds, setNewTokenIds] = useState(new Set());
-    // lastPricesRef: 上次 REST 刷新时的价格（ref），每次刷新时先快照给 priceSnapshot state
-    const [priceSnapshot, setPriceSnapshot] = useState({});
-    const lastPricesRef = useRef({});
+    // baselinePrices: 基准价格，首次加载时记录，之后刷新不覆盖，可手动重置
+    const [baselinePrices, setBaselinePrices] = useState({});
+    const [baselineTime, setBaselineTime] = useState(null);
+    const baselineSetRef = useRef(false);
     const prevTokensRef = useRef([]);
     const timerRef = useRef(null);
     const countdownRef = useRef(refreshInterval);
@@ -95,15 +99,18 @@ export default function App() {
                 const all = parsed.data;
                 const prevIds = new Set(prevTokensRef.current.map(t => t.alphaId));
                 const newIds = new Set();
-                // 先把上次的价格快照到 state，再更新 tokens（同批次渲染，对比有意义）
-                setPriceSnapshot({ ...lastPricesRef.current });
-                // 记录本次 REST 价格
                 const currentPrices = {};
                 all.forEach(t => {
                     if (!prevIds.has(t.alphaId)) newIds.add(t.alphaId);
-                    if (t.price) currentPrices[t.alphaId] = parseFloat(t.price);
+                    const p = parseFloat(t.price);
+                    if (!isNaN(p)) currentPrices[t.alphaId] = p;
                 });
-                lastPricesRef.current = currentPrices;
+                // 首次加载时记录基准价格
+                if (!baselineSetRef.current) {
+                    baselineSetRef.current = true;
+                    setBaselinePrices(currentPrices);
+                    setBaselineTime(new Date());
+                }
                 prevTokensRef.current = all;
                 setNewTokenIds(newIds);
                 setTokens(all);
@@ -140,12 +147,14 @@ export default function App() {
         return () => clearInterval(timerRef.current);
     }, [refreshInterval, fetchTokens]);
 
+    const searchKey = search.trim().toLowerCase();
     const filtered = tokens
         .filter(t => filterMul === 0 ? true : (t.mulPoint || 1) >= filterMul)
+        .filter(t => !searchKey || (t.symbol || "").toLowerCase().includes(searchKey))
         .sort((a, b) => {
             if (sortBy === "volume") return parseFloat(b.volume24h || 0) - parseFloat(a.volume24h || 0);
             if (sortBy === "mulPoint") return (b.mulPoint || 1) - (a.mulPoint || 1);
-            if (sortBy === "change") return parseFloat(b.percentChange24h || 0) - parseFloat(a.percentChange24h || 0);
+            if (sortBy === "change") return (parseFloat(b.percentChange24h) || 0) - (parseFloat(a.percentChange24h) || 0);
             if (sortBy === "marketCap") return parseFloat(b.marketCap || 0) - parseFloat(a.marketCap || 0);
             return 0;
         });
@@ -262,9 +271,22 @@ export default function App() {
                     </select>
 
                     <button
+                        onClick={() => {
+                            baselineSetRef.current = false;
+                            fetchTokens();
+                        }}
+                        className="btn"
+                        style={{
+                            background: "#1a1f2e", color: "#7dd3fc",
+                            border: "1px solid #7dd3fc44",
+                            borderRadius: 4, padding: "5px 12px", fontSize: 11, fontFamily: "inherit",
+                        }}
+                        title={baselineTime ? `当前基准：${baselineTime.toLocaleTimeString("zh-CN")}` : ""}
+                    >⊙ 重置基准</button>
+
+                    <button
                         disabled={isRefreshing}
                         onClick={() => {
-                            // 手动刷新：重置倒计时再执行 fetch
                             countdownRef.current = refreshInterval;
                             setCountdown(refreshInterval);
                             fetchTokens();
@@ -301,6 +323,19 @@ export default function App() {
                     ))}
                 </div>
 
+                <input
+                    type="text"
+                    placeholder="搜索代币..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    style={{
+                        background: "#1a1f2e", color: "#e2e8f0",
+                        border: "1px solid #2d3748", borderRadius: 4,
+                        padding: "5px 12px", fontSize: 12, fontFamily: "inherit",
+                        outline: "none", width: 160,
+                    }}
+                />
+
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto" }}>
                     <span style={{ fontSize: 11, color: "#4a5568" }}>排序：</span>
                     {[
@@ -319,6 +354,7 @@ export default function App() {
             {lastUpdate && (
                 <div style={{ padding: "6px 32px", fontSize: 10, color: "#2d3748", borderBottom: "1px solid #1a1f2e" }}>
                     最后更新：{lastUpdate.toLocaleTimeString("zh-CN")} · 共 {tokens.length} 个代币 · 显示 {filtered.length} 个
+                    {baselineTime && <span style={{ marginLeft: 12, color: "#7dd3fc88" }}>· 基准时间：{baselineTime.toLocaleTimeString("zh-CN")}</span>}
                 </div>
             )}
 
@@ -341,7 +377,7 @@ export default function App() {
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                     <thead>
                         <tr style={{ borderBottom: "1px solid #1e2533" }}>
-                            {["代币", "链", "积分倍数", "价格", "刷新变化", "24h涨跌", "24h成交量", "市值", "持有人", "状态"].map(h => (
+                            {["代币", "链", "积分倍数", "价格", "基准变化", "24h涨跌", "24h成交量", "市值", "持有人"].map(h => (
                                 <th key={h} style={{
                                     padding: "10px 12px", textAlign: "left",
                                     fontSize: 10, color: "#4a5568", fontWeight: 500,
@@ -352,26 +388,26 @@ export default function App() {
                     </thead>
                     <tbody>
                         {loading && tokens.length === 0 ? (
-                            <tr><td colSpan={10} style={{ textAlign: "center", padding: 60, color: "#4a5568" }}>
+                            <tr><td colSpan={9} style={{ textAlign: "center", padding: 60, color: "#4a5568" }}>
                                 <div style={{ fontSize: 24, marginBottom: 8 }}>⟳</div>
                                 <div>正在获取币安 Alpha 数据...</div>
                             </td></tr>
                         ) : filtered.length === 0 ? (
-                            <tr><td colSpan={10} style={{ textAlign: "center", padding: 60, color: "#4a5568" }}>
+                            <tr><td colSpan={9} style={{ textAlign: "center", padding: 60, color: "#4a5568" }}>
                                 <div style={{ fontSize: 24, marginBottom: 8 }}>○</div>
                                 <div>暂无符合条件的代币</div>
                             </td></tr>
                         ) : filtered.map((token, i) => {
                             const mul = token.mulPoint || 1;
                             const isNew = newTokenIds.has(token.alphaId);
-                            const change = parseFloat(token.percentChange24h || 0);
+                            const change = token.percentChange24h != null ? parseFloat(token.percentChange24h) : null;
                             const mulColor = mul >= 4 ? "#F0B90B" : mul >= 3 ? "#fbb040" : mul >= 2 ? "#68d391" : "#4a5568";
                             const chainColor = CHAIN_COLORS[token.chainName] || "#64748b";
-                            // 刷新变化 = 本次REST价 vs 上次REST快照价
-                            const curPrice = parseFloat(token.price || 0);
-                            const snapPrice = priceSnapshot[token.alphaId];
-                            const restChange = snapPrice && curPrice
-                                ? (curPrice - snapPrice) / snapPrice * 100
+                            // 基准变化 = 本次价格 vs 开始监控时的基准价格
+                            const curPrice = parseFloat(token.price);
+                            const basePrice = baselinePrices[token.alphaId];
+                            const baseChange = (!isNaN(curPrice) && curPrice > 0 && basePrice > 0)
+                                ? (curPrice - basePrice) / basePrice * 100
                                 : null;
 
                             return (
@@ -442,35 +478,39 @@ export default function App() {
                                         ${formatPrice(curPrice)}
                                     </td>
 
-                                    {/* 刷新变化：本次REST价 vs 上次REST快照 */}
+                                    {/* 基准变化：本次价格 vs 开始监控时的基准价 */}
                                     <td style={{ padding: "10px 12px" }}>
-                                        {restChange === null ? (
-                                            <span style={{ color: "#2d3748", fontSize: 11 }} title="首次加载无对比">—</span>
-                                        ) : Math.abs(restChange) < 0.0001 ? (
+                                        {baseChange === null ? (
+                                            <span style={{ color: "#2d3748", fontSize: 11 }}>—</span>
+                                        ) : Math.abs(baseChange) < 0.0001 ? (
                                             <span style={{ color: "#4a5568", fontSize: 11 }}>±0.00%</span>
                                         ) : (
                                             <span style={{
-                                                color: restChange >= 0 ? "#4ade80" : "#f87171",
+                                                color: baseChange >= 0 ? "#4ade80" : "#f87171",
                                                 fontWeight: 600, fontSize: 12,
-                                                background: restChange >= 0 ? "#4ade8011" : "#f8717111",
+                                                background: baseChange >= 0 ? "#4ade8011" : "#f8717111",
                                                 padding: "2px 6px", borderRadius: 4,
-                                                border: `1px solid ${restChange >= 0 ? "#4ade8033" : "#f8717133"}`
+                                                border: `1px solid ${baseChange >= 0 ? "#4ade8033" : "#f8717133"}`
                                             }}>
-                                                {restChange >= 0 ? "▲" : "▼"} {Math.abs(restChange) < 0.01
-                                                    ? Math.abs(restChange).toFixed(4)
-                                                    : Math.abs(restChange).toFixed(2)}%
+                                                {baseChange >= 0 ? "▲" : "▼"} {Math.abs(baseChange) < 0.01
+                                                    ? Math.abs(baseChange).toFixed(4)
+                                                    : Math.abs(baseChange).toFixed(2)}%
                                             </span>
                                         )}
                                     </td>
 
                                     {/* 24h Change */}
                                     <td style={{ padding: "10px 12px" }}>
-                                        <span style={{
-                                            color: change >= 0 ? "#68d391" : "#fc8181",
-                                            fontWeight: 500
-                                        }}>
-                                            {change >= 0 ? "▲" : "▼"} {Math.abs(change).toFixed(2)}%
-                                        </span>
+                                        {change === null ? (
+                                            <span style={{ color: "#2d3748", fontSize: 11 }}>—</span>
+                                        ) : (
+                                            <span style={{
+                                                color: change >= 0 ? "#68d391" : "#fc8181",
+                                                fontWeight: 500
+                                            }}>
+                                                {change >= 0 ? "▲" : "▼"} {Math.abs(change).toFixed(2)}%
+                                            </span>
+                                        )}
                                     </td>
 
                                     {/* Volume */}
@@ -488,23 +528,6 @@ export default function App() {
                                         {parseInt(token.holders || 0).toLocaleString()}
                                     </td>
 
-                                    {/* Status */}
-                                    <td style={{ padding: "10px 12px" }}>
-                                        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                                            {token.listingCex && (
-                                                <span style={{ fontSize: 9, background: "#F0B90B22", color: "#F0B90B", padding: "1px 5px", borderRadius: 3 }}>已上币安</span>
-                                            )}
-                                            {token.onlineAirdrop && (
-                                                <span style={{ fontSize: 9, background: "#9945FF22", color: "#9945FF", padding: "1px 5px", borderRadius: 3 }}>空投中</span>
-                                            )}
-                                            {token.offline && (
-                                                <span style={{ fontSize: 9, background: "#4a556822", color: "#64748b", padding: "1px 5px", borderRadius: 3 }}>下线</span>
-                                            )}
-                                            {!token.listingCex && !token.onlineAirdrop && !token.offline && (
-                                                <span style={{ fontSize: 9, color: "#2d3748" }}>交易中</span>
-                                            )}
-                                        </div>
-                                    </td>
                                 </tr>
                             );
                         })}
