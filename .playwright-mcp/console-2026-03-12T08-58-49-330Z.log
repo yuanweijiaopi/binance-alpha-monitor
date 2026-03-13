@@ -1,0 +1,17 @@
+[   63885ms] [ERROR] Failed to load resource: net::ERR_EMPTY_RESPONSE @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63885ms] [ERROR] Failed to load resource: net::ERR_EMPTY_RESPONSE @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63885ms] [ERROR] Failed to load resource: net::ERR_EMPTY_RESPONSE @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63885ms] [ERROR] Failed to load resource: net::ERR_EMPTY_RESPONSE @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63885ms] [ERROR] Failed to load resource: net::ERR_EMPTY_RESPONSE @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63885ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63885ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63885ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63885ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63885ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63885ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63886ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63888ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[   63888ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/:0
+[   63888ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[  140208ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0
+[  160219ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/binance-api/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list:0

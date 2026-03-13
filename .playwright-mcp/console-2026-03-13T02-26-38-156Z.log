@@ -1,0 +1,196 @@
+[     129ms] [WARNING] WebSocket connection to 'wss://stream.binance.com:9443/ws' failed: WebSocket is closed before the connection is established. @ http://localhost:5174/src/App.jsx?t=1773368706511:160
+[  254089ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369051696:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3672:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3697:24)
+    at invokeGuardedCallback (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3731:39)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19763:15)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+[  254094ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369051696:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3672:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3697:24)
+    at invokeGuardedCallback (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3731:39)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19763:15)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+[  253992ms] [ERROR] The above error occurred in the <App> component:
+
+    at App (http://localhost:5174/src/App.jsx?t=1773369051696:92:31)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14029
+[  254107ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369051696:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19751:22)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+    at renderRootSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19114:15)
+    at recoverFromConcurrentError (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:18734:28)
+    at performSyncWorkOnRoot (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:18877:28)
+[  308644ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369106714:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3672:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3697:24)
+    at invokeGuardedCallback (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3731:39)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19763:15)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+[  308645ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369106714:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3672:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3697:24)
+    at invokeGuardedCallback (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3731:39)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19763:15)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+[  308644ms] [ERROR] The above error occurred in the <App> component:
+
+    at App (http://localhost:5174/src/App.jsx?t=1773369106714:92:31)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14029
+[  308645ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369106714:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19751:22)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+    at renderRootSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19114:15)
+    at recoverFromConcurrentError (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:18734:28)
+    at performSyncWorkOnRoot (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:18877:28)
+[  343292ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369141371:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3672:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3697:24)
+    at invokeGuardedCallback (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3731:39)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19763:15)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+[  343295ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369141371:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3672:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3697:24)
+    at invokeGuardedCallback (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3731:39)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19763:15)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+[  343292ms] [ERROR] The above error occurred in the <App> component:
+
+    at App (http://localhost:5174/src/App.jsx?t=1773369141371:92:31)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14029
+[  343295ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369141371:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19751:22)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+    at renderRootSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19114:15)
+    at recoverFromConcurrentError (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:18734:28)
+    at performSyncWorkOnRoot (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:18877:28)
+[  373422ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369171430:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3672:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3697:24)
+    at invokeGuardedCallback (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3731:39)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19763:15)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+[  373422ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369171430:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3672:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3697:24)
+    at invokeGuardedCallback (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3731:39)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19763:15)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+[  373422ms] [ERROR] The above error occurred in the <App> component:
+
+    at App (http://localhost:5174/src/App.jsx?t=1773369171430:92:31)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14029
+[  373423ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369171430:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19751:22)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+    at renderRootSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19114:15)
+    at recoverFromConcurrentError (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:18734:28)
+    at performSyncWorkOnRoot (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:18877:28)
+[  420709ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369218748:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3672:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3697:24)
+    at invokeGuardedCallback (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3731:39)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19763:15)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+[  420710ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369218748:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3672:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3697:24)
+    at invokeGuardedCallback (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:3731:39)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19763:15)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+[  420688ms] [ERROR] The above error occurred in the <App> component:
+
+    at App (http://localhost:5174/src/App.jsx?t=1773369218748:92:31)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14029
+[  420711ms] ReferenceError: subscribeToWs is not defined
+    at App (http://localhost:5174/src/App.jsx?t=1773369218748:136:7)
+    at renderWithHooks (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:11546:26)
+    at mountIndeterminateComponent (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:14924:21)
+    at beginWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:15912:22)
+    at beginWork$1 (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19751:22)
+    at performUnitOfWork (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19196:20)
+    at workLoopSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19135:13)
+    at renderRootSync (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:19114:15)
+    at recoverFromConcurrentError (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:18734:28)
+    at performSyncWorkOnRoot (http://localhost:5174/node_modules/.vite/deps/chunk-373CG7ZK.js?v=de33d384:18877:28)
