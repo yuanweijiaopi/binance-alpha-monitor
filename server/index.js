@@ -134,7 +134,7 @@ async function fetchSpread() {
     if (alphaTokens.length === 0) return;
     const alphaSet = new Set(alphaTokens.map(t => t.symbol + "USDT"));
     try {
-        const data = await fetchJson(BINANCE_BOOKTICKER_URL);
+        const data = await fetchJson(BINANCE_BOOKTICKER_URL, { maxBuffer: 20 * 1024 * 1024, timeout: 25000 });
         if (!Array.isArray(data)) return;
 
         const newMap = {};
