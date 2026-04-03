@@ -20,6 +20,8 @@ const PRICE_FETCH_INTERVAL_MS  =  2_000;
 const STATS_FETCH_INTERVAL_MS  = 30_000;
 const ALPHA_FETCH_INTERVAL_MS  = 60_000;
 
+const PROXY = "http://127.0.0.1:7891";
+
 const BINANCE_ALPHA_URL  = "https://www.binance.com/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list";
 const BINANCE_PRICE_URL  = "https://api.binance.com/api/v3/ticker/price";
 const BINANCE_TICKER_URL = "https://api.binance.com/api/v3/ticker/24hr";
@@ -75,7 +77,7 @@ async function fetchJson(url, opts = {}) {
     const { maxBuffer = 4 * 1024 * 1024, timeout = 12000 } = opts;
     const cmd = [
         "curl", "-sS", "--max-time", String(Math.floor(timeout / 1000) - 2),
-        "--compressed",
+        "--compressed", "--proxy", PROXY,
         "-H", '"Accept: application/json"',
         '"' + bustCache(url) + '"',
     ].join(" ");
@@ -85,7 +87,8 @@ async function fetchJson(url, opts = {}) {
 
 async function curlFetch(url) {
     const cmd = [
-        "curl", "-sS", "--max-time", "10", "--compressed",
+        "curl", "-sS", "--max-time", "10",
+        "--compressed", "--proxy", PROXY,
         "-H", '"User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"',
         "-H", '"Accept: application/json"',
         '"' + bustCache(url) + '"',
