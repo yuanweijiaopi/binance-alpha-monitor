@@ -48,11 +48,20 @@ function makeFingerprint(data) {
     return data.map(t => `${t.alphaId}:${t.price}:${t.percentChange24h}:${t.volume24h}`).join("|");
 }
 
-/** 根据价差基点（bps）分类稳定度 */
-function classifyStability(spreadBps) {
+/** 根据买卖价差基点分类稳定度（有现货订单簿时使用） */
+function classifyBySpread(spreadBps) {
     if (spreadBps <  1)  return "green:stable";
     if (spreadBps <  5)  return "yellow:normal";
     if (spreadBps < 20)  return "yellow:moderate";
+    return "red:unstable";
+}
+
+/** 根据 24h 涨跌幅估算稳定度（DEX 代币降级用，无订单簿时） */
+function classifyByChange(changePercent) {
+    const abs = Math.abs(parseFloat(changePercent) || 0);
+    if (abs <  3)  return "green:stable";
+    if (abs < 10)  return "yellow:normal";
+    if (abs < 25)  return "yellow:moderate";
     return "red:unstable";
 }
 
@@ -153,16 +162,29 @@ async function fetchStats() {
             if (bid > 0 && ask > 0) {
                 const mid = (bid + ask) / 2;
                 const spreadBps = parseFloat(((ask - bid) / mid * 10000).toFixed(4));
-                newStabilityMap[sym] = { spread: spreadBps, stability: classifyStability(spreadBps) };
+                newStabilityMap[sym] = { spread: spreadBps, stability: classifyBySpread(spreadBps), source: "orderbook" };
             } else {
-                newStabilityMap[sym] = { spread: null, stability: "red:no_trade" };
+                newStabilityMap[sym] = { spread: null, stability: "red:no_trade", source: "orderbook" };
+            }
+        }
+
+        // ── DEX 代币降级：用涨跌幅估算稳定度，覆盖没有现货数据的代币 ────────
+        for (const t of alphaTokens) {
+            if (newStabilityMap[t.symbol]) continue;  // 已有现货数据，跳过
+            const change = t.percentChange24h ?? statsMap[t.symbol]?.percentChange24h;
+            if (change != null) {
+                newStabilityMap[t.symbol] = {
+                    spread: null,
+                    stability: classifyByChange(change),
+                    source: "volatility",
+                };
             }
         }
 
         stabilityMap = newStabilityMap;
-        const withSpread = Object.values(newStabilityMap).filter(v => v.spread !== null).length;
-        const sample = Object.entries(newStabilityMap).slice(0, 3).map(([k, v]) => `${k}:${v.spread}bps`).join(", ");
-        console.log(`[Stats] 更新：${Object.keys(statsMap).length} 个代币，有价差数据：${withSpread} 个 | 样例: ${sample}`);
+        const withSpread = Object.values(newStabilityMap).filter(v => v.source === "orderbook" && v.spread !== null).length;
+        const withVol    = Object.values(newStabilityMap).filter(v => v.source === "volatility").length;
+        console.log(`[Stats] 更新：现货价差 ${withSpread} 个 + 波动率估算 ${withVol} 个 = 共 ${Object.keys(newStabilityMap).length} 个`);
         broadcast({ type: "stability", stabilityMap: newStabilityMap, ts: new Date().toISOString() });
     } catch (err) {
         console.error("[Stats] 拉取失败:", (err.message || "").slice(0, 80));
