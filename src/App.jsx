@@ -7,6 +7,22 @@ import Top3Bar from "./components/Top3Bar";
 import TokenTable from "./components/TokenTable";
 
 const LOCAL_STREAM = "http://localhost:3001/api/stream";
+const STABILITY_SORT_ORDER = {
+    "green:stable": 0,
+    "yellow:normal": 1,
+    "yellow:moderate": 1,
+    "red:unstable": 2,
+    "red:no_trade": 3,
+};
+
+function getReferenceSortValue(info) {
+    const rank = STABILITY_SORT_ORDER[info?.stability] ?? 9;
+    const spread = info?.spread == null || info?.spread === "-" ? Number.POSITIVE_INFINITY : parseFloat(info.spread);
+    return {
+        rank,
+        spread: Number.isFinite(spread) ? spread : Number.POSITIVE_INFINITY,
+    };
+}
 
 export default function App() {
     const [tokens, setTokens] = useState([]);
@@ -17,7 +33,7 @@ export default function App() {
     const [refreshInterval, setRefreshInterval] = useState(3);
     const [countdown, setCountdown] = useState(3);
     const [filterMul, setFilterMul] = useState(4);
-    const [sortBy, setSortBy] = useState("volume");
+    const [sortBy, setSortBy] = useState("stability");
     const [search, setSearch] = useState("");
     const [newTokenIds, setNewTokenIds] = useState(new Set());
     const [baselinePrices, setBaselinePrices] = useState({});
@@ -192,10 +208,11 @@ export default function App() {
             if (sortBy === "change") return (parseFloat(b.percentChange24h) || 0) - (parseFloat(a.percentChange24h) || 0);
             if (sortBy === "marketCap") return parseFloat(b.marketCap || 0) - parseFloat(a.marketCap || 0);
             if (sortBy === "stability") {
-                const order = { "green:stable": 0, "yellow:normal": 1, "yellow:moderate": 1, "red:unstable": 2, "red:no_trade": 3 };
-                const sa = stabilityMap[a.symbol]?.stability;
-                const sb = stabilityMap[b.symbol]?.stability;
-                return (order[sa] ?? 9) - (order[sb] ?? 9);
+                const aRef = getReferenceSortValue(referenceStabilityMap[a.symbol]);
+                const bRef = getReferenceSortValue(referenceStabilityMap[b.symbol]);
+                if (aRef.rank !== bRef.rank) return aRef.rank - bRef.rank;
+                if (aRef.spread !== bRef.spread) return aRef.spread - bRef.spread;
+                return (a.symbol || "").localeCompare(b.symbol || "");
             }
             return 0;
         });
@@ -220,70 +237,75 @@ export default function App() {
     };
 
     return (
-        <div style={{ minHeight: "100vh", background: "#0a0c10", color: "#e2e8f0" }}>
-            <Header
-                mulCounts={mulCounts}
-                loading={loading}
-                error={error}
-                isRefreshing={isRefreshing}
-                countdown={sseActive ? 0 : countdown}
-                refreshInterval={refreshInterval}
-                baselineTime={baselineTime}
-                sseActive={sseActive}
-                onIntervalChange={setRefreshInterval}
-                onResetBaseline={handleResetBaseline}
-                onRefresh={handleRefresh}
-            />
+        <div className="app-shell">
+            <div className="dashboard-panel">
+                <Header
+                    mulCounts={mulCounts}
+                    loading={loading}
+                    error={error}
+                    isRefreshing={isRefreshing}
+                    countdown={sseActive ? 0 : countdown}
+                    refreshInterval={refreshInterval}
+                    baselineTime={baselineTime}
+                    sseActive={sseActive}
+                    onIntervalChange={setRefreshInterval}
+                    onResetBaseline={handleResetBaseline}
+                    onRefresh={handleRefresh}
+                />
 
-            <Top3Bar top3={top3} bnbPrice={bnbPrice} />
+                <Top3Bar top3={top3} bnbPrice={bnbPrice} />
 
-            <FilterBar
-                filterMul={filterMul}
-                search={search}
-                sortBy={sortBy}
-                mulCounts={mulCounts}
-                onFilterMul={setFilterMul}
-                onSearch={setSearch}
-                onSort={setSortBy}
-            />
+                <FilterBar
+                    filterMul={filterMul}
+                    search={search}
+                    sortBy={sortBy}
+                    mulCounts={mulCounts}
+                    onFilterMul={setFilterMul}
+                    onSearch={setSearch}
+                    onSort={setSortBy}
+                />
 
-            {(lastUpdate || lastCheckTime) && (
-                <div style={{ padding: "6px 32px", fontSize: 10, color: "#2d3748", borderBottom: "1px solid #1a1f2e", display: "flex", gap: 16, flexWrap: "wrap" }}>
-                    <span>共 {tokens.length} 个 · 显示 {filtered.length} 个</span>
-                    {lastUpdate && <span>数据更新：{lastUpdate.toLocaleTimeString("zh-CN")}</span>}
-                    {sseActive && lastCheckTime && (
-                        <>
-                            <span style={{ color: "#48bb7866" }}>最后检查：{lastCheckTime.toLocaleTimeString("zh-CN")}</span>
-                            <span style={{ color: "#48bb7888" }}>
-                                已检查 <b style={{ color: "#48bb78" }}>{sseFetchCount}</b> 次 · 数据变化 <b style={{ color: sseChangeCount > 0 ? "#F0B90B" : "#4a5568" }}>{sseChangeCount}</b> 次
-                            </span>
-                        </>
-                    )}
-                    {baselineTime && <span style={{ color: "#7dd3fc66" }}>基准：{baselineTime.toLocaleTimeString("zh-CN")}</span>}
-                </div>
-            )}
-
-            {error && (
-                <div style={{
-                    margin: "20px 32px", padding: "12px 16px",
-                    background: "#fc818120", border: "1px solid #fc818140",
-                    borderRadius: 6, fontSize: 12, color: "#fc8181"
-                }}>
-                    ⚠ {error}
-                    <div style={{ marginTop: 6, fontSize: 10, color: "#fc818180" }}>
-                        本地代理服务器未启动？运行 <code>npm run server</code> 可获得实时推送
+                {(lastUpdate || lastCheckTime) && (
+                    <div className="status-strip">
+                        <span className="status-pill">共 {tokens.length} 个</span>
+                        <span className="status-pill">显示 {filtered.length} 个</span>
+                        {lastUpdate && <span className="status-pill">数据更新 {lastUpdate.toLocaleTimeString("zh-CN")}</span>}
+                        {sseActive && lastCheckTime && (
+                            <>
+                                <span className="status-pill" style={{ color: "#6fe5a2" }}>最后检查 {lastCheckTime.toLocaleTimeString("zh-CN")}</span>
+                                <span className="status-pill">
+                                    已检查 <b style={{ color: "#48bb78" }}>{sseFetchCount}</b> 次
+                                    <span style={{ color: "#4d5c76" }}>·</span>
+                                    变化 <b style={{ color: sseChangeCount > 0 ? "#F0B90B" : "#71829e" }}>{sseChangeCount}</b> 次
+                                </span>
+                            </>
+                        )}
+                        {baselineTime && <span className="status-pill" style={{ color: "#8ad3ff" }}>基准 {baselineTime.toLocaleTimeString("zh-CN")}</span>}
                     </div>
-                </div>
-            )}
+                )}
 
-            <TokenTable
-                loading={loading}
-                filtered={filtered}
-                newTokenIds={newTokenIds}
-                baselinePrices={baselinePrices}
-                stabilityMap={stabilityMap}
-                referenceStabilityMap={referenceStabilityMap}
-            />
+                {error && (
+                    <div style={{
+                        margin: "18px 24px 0", padding: "14px 16px",
+                        background: "#fc818120", border: "1px solid #fc818140",
+                        borderRadius: 14, fontSize: 12, color: "#fc8181"
+                    }}>
+                        ⚠ {error}
+                        <div style={{ marginTop: 6, fontSize: 10, color: "#fc818180" }}>
+                            本地代理服务器未启动？运行 <code>npm run server</code> 可获得实时推送
+                        </div>
+                    </div>
+                )}
+
+                <TokenTable
+                    loading={loading}
+                    filtered={filtered}
+                    newTokenIds={newTokenIds}
+                    baselinePrices={baselinePrices}
+                    stabilityMap={stabilityMap}
+                    referenceStabilityMap={referenceStabilityMap}
+                />
+            </div>
         </div>
     );
 }

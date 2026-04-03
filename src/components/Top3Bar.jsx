@@ -10,19 +10,33 @@ export default function Top3Bar({ top3, bnbPrice }) {
     if (!top3 || top3.length === 0) return null;
 
     return (
-        <div style={{
-            padding: "8px 32px",
-            borderBottom: "1px solid #1a1f2e",
-            display: "flex", alignItems: "center", gap: 24,
-            background: "#0d0f18",
+        <div className="panel-section" style={{
+            padding: "14px 24px",
+            display: "flex", alignItems: "center", gap: 18,
+            flexWrap: "wrap",
+            background: "linear-gradient(180deg, rgba(13, 18, 28, 0.98), rgba(11, 15, 23, 0.92))",
         }}>
-            <span style={{ fontSize: 10, color: "#4a5568", whiteSpace: "nowrap" }}>今日 Top3：</span>
+            <span style={{
+                fontSize: 10,
+                color: "#7a8cab",
+                whiteSpace: "nowrap",
+                textTransform: "uppercase",
+                letterSpacing: "0.14em"
+            }}>今日 Top3</span>
 
             <div style={{ display: "flex", gap: 20, flex: 1, flexWrap: "wrap" }}>
                 {top3.map((t, i) => (
-                    <div key={t.symbol} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div key={t.symbol} style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "8px 12px",
+                        borderRadius: 12,
+                        background: "rgba(17, 23, 34, 0.88)",
+                        border: "1px solid rgba(43, 53, 73, 0.9)"
+                    }}>
                         <span style={{
-                            width: 16, height: 16, borderRadius: "50%",
+                            width: 18, height: 18, borderRadius: "50%",
                             background: i === 0 ? "#F0B90B" : i === 1 ? "#94a3b8" : "#8B6914",
                             display: "flex", alignItems: "center", justifyContent: "center",
                             fontSize: 9, fontWeight: 700, color: "#0a0c10", flexShrink: 0,
@@ -41,8 +55,17 @@ export default function Top3Bar({ top3, bnbPrice }) {
             </div>
 
             {bnbPrice && (
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                    <span style={{ fontSize: 10, color: "#4a5568" }}>BNB</span>
+                <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    flexShrink: 0,
+                    padding: "8px 12px",
+                    borderRadius: 12,
+                    background: "rgba(17, 23, 34, 0.88)",
+                    border: "1px solid rgba(43, 53, 73, 0.9)"
+                }}>
+                    <span style={{ fontSize: 10, color: "#7a8cab" }}>BNB</span>
                     <span style={{ fontSize: 12, fontWeight: 700, color: "#F0B90B" }}>
                         ${parseFloat(bnbPrice).toFixed(1)}
                     </span>

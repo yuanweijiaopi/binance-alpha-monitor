@@ -16,6 +16,14 @@ const STABILITY_CONFIG = {
     "red:no_trade":   { label: "无成交", color: "#4a5568", bg: "#4a556820" },
 };
 
+function classifyByLocalChange(changePercent) {
+    const abs = Math.abs(parseFloat(changePercent) || 0);
+    if (abs < 3) return "green:stable";
+    if (abs < 10) return "yellow:normal";
+    if (abs < 25) return "yellow:moderate";
+    return "red:unstable";
+}
+
 function TokenIcon({ iconUrl, symbol, mulColor }) {
     const [imgError, setImgError] = useState(false);
     if (iconUrl && !imgError) {
@@ -90,6 +98,9 @@ function DetailPanel({ token, stabInfo, referenceStabInfo, baselinePrices }) {
     const baseChange = (!isNaN(curPrice) && curPrice > 0 && basePrice > 0)
         ? (curPrice - basePrice) / basePrice * 100 : null;
     const change = token.percentChange24h != null ? parseFloat(token.percentChange24h) : null;
+    const localStability = stabInfo?.stability || (
+        token.percentChange24h != null ? classifyByLocalChange(token.percentChange24h) : null
+    );
 
     const items = [
         {
@@ -111,6 +122,16 @@ function DetailPanel({ token, stabInfo, referenceStabInfo, baselinePrices }) {
                 : <span style={{ color: change >= 0 ? "#68d391" : "#fc8181" }}>
                     {change >= 0 ? "▲" : "▼"} {Math.abs(change).toFixed(2)}%
                   </span>,
+        },
+        {
+            label: "本地稳定度",
+            value: <StabilityBadge st={localStability} />,
+        },
+        {
+            label: "本地 BPS / VOL",
+            value: <span style={{ fontFamily: "IBM Plex Mono, monospace" }}>
+                <LocalMetricCell token={token} stabInfo={stabInfo} />
+            </span>,
         },
         {
             label: "24h 成交量",
@@ -136,7 +157,7 @@ function DetailPanel({ token, stabInfo, referenceStabInfo, baselinePrices }) {
 
     return (
         <tr>
-            <td colSpan={7} style={{ padding: 0, borderBottom: "1px solid #111520" }}>
+            <td colSpan={5} style={{ padding: 0, borderBottom: "1px solid #111520" }}>
                 <div style={{
                     display: "flex", flexWrap: "wrap", gap: 0,
                     background: "#0d1117",
@@ -163,19 +184,20 @@ function DetailPanel({ token, stabInfo, referenceStabInfo, baselinePrices }) {
 export default function TokenTable({ loading, filtered, newTokenIds, baselinePrices, stabilityMap, referenceStabilityMap }) {
     const [expandedId, setExpandedId] = useState(null);
 
-    const HEADERS = ["代币", "链", "积分倍数", "本地稳定度", "本地 bps / vol", "第三方参考", ""];
+    const HEADERS = ["代币", "链", "积分倍数", "第三方参考", ""];
 
     const toggle = (id) => setExpandedId(prev => prev === id ? null : id);
 
     return (
-        <div style={{ padding: "0 32px 32px", overflowX: "auto" }}>
+        <div className="token-table-wrap">
+            <div className="token-table-shell">
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
-                    <tr style={{ borderBottom: "1px solid #1e2533" }}>
+                    <tr className="table-header-row" style={{ borderBottom: "1px solid #1e2533" }}>
                         {HEADERS.map((h, i) => (
                             <th key={i} style={{
-                                padding: "10px 12px", textAlign: "left",
-                                fontSize: 10, color: "#4a5568", fontWeight: 500,
+                                padding: "14px 12px", textAlign: "left",
+                                fontSize: 10, color: "#71829e", fontWeight: 500,
                                 letterSpacing: "0.08em", textTransform: "uppercase",
                                 whiteSpace: "nowrap",
                             }}>{h}</th>
@@ -184,12 +206,12 @@ export default function TokenTable({ loading, filtered, newTokenIds, baselinePri
                 </thead>
                 <tbody>
                     {loading && filtered.length === 0 ? (
-                        <tr><td colSpan={7} style={{ textAlign: "center", padding: 60, color: "#4a5568" }}>
+                        <tr><td colSpan={5} style={{ textAlign: "center", padding: 60, color: "#4a5568" }}>
                             <div style={{ fontSize: 24, marginBottom: 8 }}>⟳</div>
                             <div>正在获取币安 Alpha 数据...</div>
                         </td></tr>
                     ) : filtered.length === 0 ? (
-                        <tr><td colSpan={7} style={{ textAlign: "center", padding: 60, color: "#4a5568" }}>
+                        <tr><td colSpan={5} style={{ textAlign: "center", padding: 60, color: "#4a5568" }}>
                             <div style={{ fontSize: 24, marginBottom: 8 }}>○</div>
                             <div>暂无符合条件的代币</div>
                         </td></tr>
@@ -253,16 +275,6 @@ export default function TokenTable({ loading, filtered, newTokenIds, baselinePri
                                     }}>{mul}x</div>
                                 </td>
 
-                                {/* 本地稳定度 */}
-                                <td style={{ padding: "10px 12px" }}>
-                                    <StabilityBadge st={stabInfo?.stability} />
-                                </td>
-
-                                {/* 本地价差基点 / 波动率 */}
-                                <td style={{ padding: "10px 12px", fontFamily: "IBM Plex Mono, monospace", fontSize: 12 }}>
-                                    <LocalMetricCell token={token} stabInfo={stabInfo} />
-                                </td>
-
                                 {/* 第三方参考 */}
                                 <td style={{ padding: "10px 12px" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -299,6 +311,7 @@ export default function TokenTable({ loading, filtered, newTokenIds, baselinePri
                     })}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 }

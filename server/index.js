@@ -162,12 +162,13 @@ async function fetchStats() {
 
     // 只请求已有价格的现货对，避免全量下载（5-10MB → ~50KB）
     const spotSymbols = Object.keys(priceMap).map(s => s + "USDT").filter(s => alphaSet.has(s));
-    if (spotSymbols.length === 0) return;
-
-    const filteredUrl = BINANCE_TICKER_URL + "?symbols=" + encodeURIComponent(JSON.stringify(spotSymbols));
     try {
-        const data = await fetchJson(filteredUrl, { maxBuffer: 4 * 1024 * 1024, timeout: 15000 });
-        if (!Array.isArray(data)) return;
+        let data = [];
+        if (spotSymbols.length > 0) {
+            const filteredUrl = BINANCE_TICKER_URL + "?symbols=" + encodeURIComponent(JSON.stringify(spotSymbols));
+            const fetched = await fetchJson(filteredUrl, { maxBuffer: 4 * 1024 * 1024, timeout: 15000 });
+            if (Array.isArray(fetched)) data = fetched;
+        }
 
         const newStabilityMap = {};
         for (const item of data) {
