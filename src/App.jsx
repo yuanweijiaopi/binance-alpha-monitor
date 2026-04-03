@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import "./index.css";
-import { fetchAlphaTokens, fetchStabilityFeed, fetchAlpha123Data } from "./api/binanceAlpha";
+import { fetchAlphaTokens, fetchAlpha123Data } from "./api/binanceAlpha";
 import Header from "./components/Header";
 import FilterBar from "./components/FilterBar";
 import Top3Bar from "./components/Top3Bar";
@@ -81,11 +81,13 @@ export default function App() {
                         setLastCheckTime(new Date());
 
                         if (msg.type === "data" && msg.success && msg.data) {
-                            // 数据真正变化，更新代币列表
                             processTokenData(msg.data);
                             setLoading(false);
+                        } else if (msg.type === "stability" && msg.stabilityMap) {
+                            // 服务器推送的稳定度/价差更新
+                            setStabilityMap(msg.stabilityMap);
                         }
-                        // type === "ping" 时只更新检查时间，不重新渲染代币列表
+                        // type === "ping" 时只更新检查时间
                     } catch (_) {}
                 };
 
@@ -107,17 +109,13 @@ export default function App() {
         };
     }, [processTokenData]);
 
-    // ── 辅助数据（稳定度/Top3），SSE 不包含，定时拉取 ──────────────────────
+    // ── 辅助数据（Top3/BNB价格），SSE 覆盖稳定度，这里只管 alpha123 数据 ──
     const fetchAuxData = useCallback(async () => {
-        const [stabMap, alpha123] = await Promise.allSettled([
-            fetchStabilityFeed(),
-            fetchAlpha123Data(),
-        ]);
-        if (stabMap.status === "fulfilled") setStabilityMap(stabMap.value);
-        if (alpha123.status === "fulfilled") {
-            setTop3(alpha123.value.top3);
-            setBnbPrice(alpha123.value.bnbPrice);
-        }
+        try {
+            const result = await fetchAlpha123Data();
+            setTop3(result.top3);
+            setBnbPrice(result.bnbPrice);
+        } catch (_) {}
     }, []);
 
     // 启动时拉辅助数据，之后每 60s 刷新一次
