@@ -10,7 +10,6 @@
  */
 
 import http from "http";
-import https from "https";
 import { exec } from "child_process";
 import { promisify } from "util";
 
@@ -52,25 +51,15 @@ function makeFingerprint(data) {
     return data.map(t => `${t.alphaId}:${t.price}:${t.percentChange24h}:${t.volume24h}`).join("|");
 }
 
-// ── HTTPS 请求封装 ────────────────────────────────────────────────────────────
-function httpsGet(url) {
-    return new Promise((resolve, reject) => {
-        const req = https.get(url, {
-            headers: {
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
-                "Accept": "application/json",
-            },
-        }, (res) => {
-            let data = "";
-            res.on("data", chunk => data += chunk);
-            res.on("end", () => {
-                try { resolve(JSON.parse(data)); }
-                catch (e) { reject(new Error("JSON parse error")); }
-            });
-        });
-        req.on("error", reject);
-        req.setTimeout(8000, () => { req.destroy(new Error("timeout")); });
-    });
+// ── 所有外部请求统一走 curl（自动使用系统代理，绕过国内屏蔽） ─────────────
+async function fetchJson(url) {
+    const cmd = [
+        "curl", "-sS", "--max-time", "10", "--compressed",
+        "-H", '"Accept: application/json"',
+        '"' + url + '"',
+    ].join(" ");
+    const { stdout } = await execAsync(cmd, { timeout: 12000 });
+    return JSON.parse(stdout);
 }
 
 async function curlFetch(url) {
@@ -117,7 +106,7 @@ async function fetchPrices() {
     if (alphaTokens.length === 0) return;
     const alphaSet = new Set(alphaTokens.map(t => t.symbol + "USDT"));
     try {
-        const data = await httpsGet(BINANCE_PRICE_URL);
+        const data = await fetchJson(BINANCE_PRICE_URL);
         if (!Array.isArray(data)) return;
         for (const item of data) {
             if (alphaSet.has(item.symbol)) {
@@ -130,18 +119,20 @@ async function fetchPrices() {
     }
 }
 
-// ── 拉取 24h 涨跌幅 + 成交量（每 30s，weight=40） ────────────────────────────
+// ── 拉取 24h 涨跌幅 + 成交量（每 30s） ───────────────────────────────────────
 async function fetchStats() {
     if (alphaTokens.length === 0) return;
-    const alphaSet = new Set(alphaTokens.map(t => t.symbol + "USDT"));
+    // 只拉 Alpha 代币，避免全量 ticker 超出 execAsync 缓冲区
+    const symbols = JSON.stringify(alphaTokens.map(t => t.symbol + "USDT"));
+    const url = `${BINANCE_TICKER_URL}?symbols=${encodeURIComponent(symbols)}`;
     try {
-        const data = await httpsGet(BINANCE_TICKER_URL);
+        const data = await fetchJson(url);
         if (!Array.isArray(data)) return;
         for (const item of data) {
-            if (alphaSet.has(item.symbol)) {
+            if (item.symbol?.endsWith("USDT")) {
                 statsMap[item.symbol.slice(0, -4)] = {
                     percentChange24h: item.priceChangePercent,
-                    volume24h: item.quoteVolume,   // USDT 计价成交量
+                    volume24h: item.quoteVolume,
                 };
             }
         }
@@ -154,7 +145,8 @@ async function fetchStats() {
 // ── 拉取稳定度 + 价差（每 15s） ──────────────────────────────────────────────
 async function fetchStability() {
     try {
-        const json = await httpsGet(STABILITY_URL);
+        // 用带浏览器 UA 的 curlFetch，确保 alpha123.uk 返回完整数据
+        const json = await curlFetch(STABILITY_URL);
         const map = {};
         for (const item of json.items || []) {
             const symbol = item.n.split("/")[0];
