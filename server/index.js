@@ -160,7 +160,9 @@ async function fetchStats() {
         }
 
         stabilityMap = newStabilityMap;
-        console.log(`[Stats] 更新：${Object.keys(statsMap).length} 个代币，价差已计算`);
+        const withSpread = Object.values(newStabilityMap).filter(v => v.spread !== null).length;
+        const sample = Object.entries(newStabilityMap).slice(0, 3).map(([k, v]) => `${k}:${v.spread}bps`).join(", ");
+        console.log(`[Stats] 更新：${Object.keys(statsMap).length} 个代币，有价差数据：${withSpread} 个 | 样例: ${sample}`);
         broadcast({ type: "stability", stabilityMap: newStabilityMap, ts: new Date().toISOString() });
     } catch (err) {
         console.error("[Stats] 拉取失败:", (err.message || "").slice(0, 80));
