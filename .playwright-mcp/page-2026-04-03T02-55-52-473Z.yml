@@ -1,0 +1,104 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Alpha123 空投日历" [ref=e4] [cursor=pointer]:
+        - /url: /zh/
+        - generic [ref=e5]: Alpha123
+        - text: 空投日历
+      - button "" [ref=e6] [cursor=pointer]:
+        - generic [ref=e7]: 
+      - generic [ref=e8]:
+        - link "今日" [ref=e9] [cursor=pointer]:
+          - /url: /zh/
+        - link "历史" [ref=e10] [cursor=pointer]:
+          - /url: /zh/history.html
+        - link "稳定度" [ref=e11] [cursor=pointer]:
+          - /url: /zh/stability/
+        - link "记账" [ref=e12] [cursor=pointer]:
+          - /url: /calendar/
+  - main [ref=e13]:
+    - generic [ref=e14]:
+      - heading " 今日空投 Alpha活跃人数推算 13.2 万 " [level=2] [ref=e15]:
+        - generic [ref=e16]: 
+        - text: 今日空投
+        - generic [ref=e17] [cursor=pointer]:
+          - generic [ref=e18]: Alpha活跃人数推算
+          - generic [ref=e19]: 13.2 万
+          - generic "点击查看详情" [ref=e20]: 
+      - table [ref=e22]:
+        - rowgroup [ref=e23]:
+          - row "项目 积分 数量 时间" [ref=e24]:
+            - columnheader "项目" [ref=e25]
+            - columnheader "积分" [ref=e26]
+            - columnheader "数量" [ref=e27]
+            - columnheader "时间" [ref=e28]
+        - rowgroup [ref=e29]:
+          - row "暂无数据" [ref=e30]:
+            - cell "暂无数据" [ref=e31]:
+              - generic [ref=e32]: 暂无数据
+      - heading " 空投预告" [level=2] [ref=e33]:
+        - generic [ref=e34]: 
+        - text: 空投预告
+      - table [ref=e36]:
+        - rowgroup [ref=e37]:
+          - row "项目 积分 数量 时间" [ref=e38]:
+            - columnheader "项目" [ref=e39]
+            - columnheader "积分" [ref=e40]
+            - columnheader "数量" [ref=e41]
+            - columnheader "时间" [ref=e42]
+        - rowgroup [ref=e43]:
+          - row "暂无数据" [ref=e44]:
+            - cell "暂无数据" [ref=e45]:
+              - generic [ref=e46]: 暂无数据
+      - heading " 推荐工具" [level=2] [ref=e47]:
+        - generic [ref=e48]: 
+        - text: 推荐工具
+      - table [ref=e50]:
+        - rowgroup [ref=e51]:
+          - row "工具" [ref=e52]:
+            - columnheader "工具" [ref=e53]
+        - rowgroup [ref=e54]:
+          - row "稳定度看板（3秒更新）  识别当前时间相对稳定的项目，降低磨损风险" [ref=e55]:
+            - cell "稳定度看板（3秒更新）  识别当前时间相对稳定的项目，降低磨损风险" [ref=e56]:
+              - generic [ref=e58]:
+                - link "稳定度看板（3秒更新） " [ref=e60] [cursor=pointer]:
+                  - /url: /zh/stability/
+                  - text: 稳定度看板（3秒更新）
+                  - generic [ref=e61]: 
+                - generic [ref=e62]: 识别当前时间相对稳定的项目，降低磨损风险
+          - row "模拟抢空投（图片验证）  每天练一练，模拟真实抢空投场景，提升反应速度和成功率" [ref=e63]:
+            - cell "模拟抢空投（图片验证）  每天练一练，模拟真实抢空投场景，提升反应速度和成功率" [ref=e64]:
+              - generic [ref=e66]:
+                - link "模拟抢空投（图片验证） " [ref=e68] [cursor=pointer]:
+                  - /url: /zh/airdrop-sim2.html
+                  - text: 模拟抢空投（图片验证）
+                  - generic [ref=e69]: 
+                - generic [ref=e70]: 每天练一练，模拟真实抢空投场景，提升反应速度和成功率
+          - row "网站使用帮助与提示  关于网站功能图标与术语解释说明" [ref=e71]:
+            - cell "网站使用帮助与提示  关于网站功能图标与术语解释说明" [ref=e72]:
+              - generic [ref=e74]:
+                - link "网站使用帮助与提示 " [ref=e76] [cursor=pointer]:
+                  - /url: /manual/zh/icons-reference.html
+                  - text: 网站使用帮助与提示
+                  - generic [ref=e77]: 
+                - generic [ref=e78]: 关于网站功能图标与术语解释说明
+  - text:        
+  - contentinfo [ref=e79]:
+    - generic [ref=e81]:
+      - link " alpha123.uk" [ref=e83] [cursor=pointer]:
+        - /url: https://alpha123.uk
+        - generic [ref=e84]: 
+        - text: alpha123.uk
+      - generic [ref=e86]:
+        - link "Alpha123 中文 𝕏（推特）" [ref=e87] [cursor=pointer]:
+          - /url: https://twitter.com/alpha123cc
+          - text: 𝕏
+        - link "Telegram通知" [ref=e88] [cursor=pointer]:
+          - /url: https://t.me/alpha123cn
+          - generic [ref=e89]: 
+        - link "网站使用帮助与提示" [ref=e90] [cursor=pointer]:
+          - /url: /manual/zh/icons-reference.html
+          - generic [ref=e91]: 
+        - link "" [ref=e93] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e94]: 

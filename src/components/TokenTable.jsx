@@ -46,8 +46,45 @@ function StabilityBadge({ st }) {
     );
 }
 
+function LocalMetricCell({ token, stabInfo }) {
+    if (stabInfo?.spread != null) {
+        return (
+            <span style={{ color: stabInfo.spread < 1 ? "#48bb78" : stabInfo.spread < 3 ? "#F0B90B" : "#fc8181" }}>
+                {stabInfo.spread.toFixed(4)} bps
+            </span>
+        );
+    }
+
+    const chg = parseFloat(token.percentChange24h);
+    if (isNaN(chg)) return <span style={{ color: "#2d3748" }}>—</span>;
+
+    const abs = Math.abs(chg);
+    const col = abs < 3 ? "#48bb7888" : abs < 10 ? "#F0B90B88" : "#fc818188";
+    return (
+        <span style={{ color: col, fontSize: 11 }}>
+            {abs.toFixed(2)}%<span style={{ fontSize: 9, marginLeft: 2, opacity: 0.6 }}>vol</span>
+        </span>
+    );
+}
+
+function ReferenceMetricCell({ refInfo }) {
+    if (!refInfo) return <span style={{ color: "#4a5568", fontSize: 11 }}>未收录</span>;
+    if (refInfo.spread == null || refInfo.spread === "-") {
+        return <span style={{ color: "#2d3748" }}>—</span>;
+    }
+
+    const spread = parseFloat(refInfo.spread);
+    if (isNaN(spread)) return <span style={{ color: "#2d3748" }}>—</span>;
+
+    return (
+        <span style={{ color: spread < 1 ? "#48bb78" : spread < 3 ? "#F0B90B" : "#fc8181" }}>
+            {spread.toFixed(4)} bps
+        </span>
+    );
+}
+
 // 展开后的详情面板
-function DetailPanel({ token, stabInfo, baselinePrices }) {
+function DetailPanel({ token, stabInfo, referenceStabInfo, baselinePrices }) {
     const curPrice = parseFloat(token.price);
     const basePrice = baselinePrices[token.alphaId];
     const baseChange = (!isNaN(curPrice) && curPrice > 0 && basePrice > 0)
@@ -88,10 +125,10 @@ function DetailPanel({ token, stabInfo, baselinePrices }) {
             value: <span style={{ color: "#94a3b8" }}>{parseInt(token.holders || 0, 10).toLocaleString()}</span>,
         },
         {
-            label: "4倍天数",
-            value: stabInfo?.mul4Days != null && stabInfo.mul4Days !== "-"
-                ? <span style={{ color: stabInfo.mul4Days >= 20 ? "#F0B90B" : "#94a3b8", fontWeight: stabInfo.mul4Days >= 20 ? 700 : 400 }}>
-                    {stabInfo.mul4Days}d
+            label: "第三方 4倍天数",
+            value: referenceStabInfo?.mul4Days != null && referenceStabInfo.mul4Days !== "-"
+                ? <span style={{ color: referenceStabInfo.mul4Days >= 20 ? "#F0B90B" : "#94a3b8", fontWeight: referenceStabInfo.mul4Days >= 20 ? 700 : 400 }}>
+                    {referenceStabInfo.mul4Days}d
                   </span>
                 : <span style={{ color: "#2d3748" }}>—</span>,
         },
@@ -99,7 +136,7 @@ function DetailPanel({ token, stabInfo, baselinePrices }) {
 
     return (
         <tr>
-            <td colSpan={6} style={{ padding: 0, borderBottom: "1px solid #111520" }}>
+            <td colSpan={7} style={{ padding: 0, borderBottom: "1px solid #111520" }}>
                 <div style={{
                     display: "flex", flexWrap: "wrap", gap: 0,
                     background: "#0d1117",
@@ -123,10 +160,10 @@ function DetailPanel({ token, stabInfo, baselinePrices }) {
     );
 }
 
-export default function TokenTable({ loading, filtered, newTokenIds, baselinePrices, stabilityMap }) {
+export default function TokenTable({ loading, filtered, newTokenIds, baselinePrices, stabilityMap, referenceStabilityMap }) {
     const [expandedId, setExpandedId] = useState(null);
 
-    const HEADERS = ["代币", "链", "积分倍数", "稳定度", "价差 / 波动", ""];
+    const HEADERS = ["代币", "链", "积分倍数", "本地稳定度", "本地 bps / vol", "第三方参考", ""];
 
     const toggle = (id) => setExpandedId(prev => prev === id ? null : id);
 
@@ -147,12 +184,12 @@ export default function TokenTable({ loading, filtered, newTokenIds, baselinePri
                 </thead>
                 <tbody>
                     {loading && filtered.length === 0 ? (
-                        <tr><td colSpan={6} style={{ textAlign: "center", padding: 60, color: "#4a5568" }}>
+                        <tr><td colSpan={7} style={{ textAlign: "center", padding: 60, color: "#4a5568" }}>
                             <div style={{ fontSize: 24, marginBottom: 8 }}>⟳</div>
                             <div>正在获取币安 Alpha 数据...</div>
                         </td></tr>
                     ) : filtered.length === 0 ? (
-                        <tr><td colSpan={6} style={{ textAlign: "center", padding: 60, color: "#4a5568" }}>
+                        <tr><td colSpan={7} style={{ textAlign: "center", padding: 60, color: "#4a5568" }}>
                             <div style={{ fontSize: 24, marginBottom: 8 }}>○</div>
                             <div>暂无符合条件的代币</div>
                         </td></tr>
@@ -162,6 +199,7 @@ export default function TokenTable({ loading, filtered, newTokenIds, baselinePri
                         const mulColor = mul >= 4 ? "#F0B90B" : mul >= 3 ? "#fbb040" : mul >= 2 ? "#68d391" : "#4a5568";
                         const chainColor = CHAIN_COLORS[token.chainName] || "#64748b";
                         const stabInfo = stabilityMap[token.symbol] || null;
+                        const referenceStabInfo = referenceStabilityMap[token.symbol] || null;
                         const isExpanded = expandedId === token.alphaId;
 
                         return [
@@ -215,27 +253,26 @@ export default function TokenTable({ loading, filtered, newTokenIds, baselinePri
                                     }}>{mul}x</div>
                                 </td>
 
-                                {/* 稳定度 */}
+                                {/* 本地稳定度 */}
                                 <td style={{ padding: "10px 12px" }}>
                                     <StabilityBadge st={stabInfo?.stability} />
                                 </td>
 
-                                {/* 价差基点 / 波动率 */}
+                                {/* 本地价差基点 / 波动率 */}
                                 <td style={{ padding: "10px 12px", fontFamily: "IBM Plex Mono, monospace", fontSize: 12 }}>
-                                    {stabInfo?.spread != null
-                                        ? <span style={{ color: stabInfo.spread < 1 ? "#48bb78" : stabInfo.spread < 3 ? "#F0B90B" : "#fc8181" }}>
-                                            {stabInfo.spread.toFixed(4)}
-                                          </span>
-                                        : (() => {
-                                            const chg = parseFloat(token.percentChange24h);
-                                            if (isNaN(chg)) return <span style={{ color: "#2d3748" }}>—</span>;
-                                            const abs = Math.abs(chg);
-                                            const col = abs < 3 ? "#48bb7888" : abs < 10 ? "#F0B90B88" : "#fc818188";
-                                            return <span style={{ color: col, fontSize: 11 }}>
-                                                {abs.toFixed(2)}%<span style={{ fontSize: 9, marginLeft: 2, opacity: 0.6 }}>波动</span>
-                                            </span>;
-                                          })()
-                                    }
+                                    <LocalMetricCell token={token} stabInfo={stabInfo} />
+                                </td>
+
+                                {/* 第三方参考 */}
+                                <td style={{ padding: "10px 12px" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                                        {referenceStabInfo
+                                            ? <StabilityBadge st={referenceStabInfo.stability} />
+                                            : <span style={{ color: "#4a5568", fontSize: 11 }}>未收录</span>}
+                                        <span style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: 12 }}>
+                                            <ReferenceMetricCell refInfo={referenceStabInfo} />
+                                        </span>
+                                    </div>
                                 </td>
 
                                 {/* 展开箭头 */}
@@ -254,6 +291,7 @@ export default function TokenTable({ loading, filtered, newTokenIds, baselinePri
                                     key={`${token.alphaId}-detail`}
                                     token={token}
                                     stabInfo={stabInfo}
+                                    referenceStabInfo={referenceStabInfo}
                                     baselinePrices={baselinePrices}
                                 />
                             ),

@@ -19,17 +19,20 @@ const PORT = 3001;
 const PRICE_FETCH_INTERVAL_MS  =  2_000;
 const STATS_FETCH_INTERVAL_MS  = 30_000;
 const ALPHA_FETCH_INTERVAL_MS  = 60_000;
+const REFERENCE_FETCH_INTERVAL_MS = 1_000;
 
-const PROXY = "http://127.0.0.1:7891";
+// 代理由环境变量 HTTPS_PROXY / ALL_PROXY 提供，curl 自动继承，无需硬编码
 
 const BINANCE_ALPHA_URL  = "https://www.binance.com/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list";
 const BINANCE_PRICE_URL  = "https://api.binance.com/api/v3/ticker/price";
 const BINANCE_TICKER_URL = "https://api.binance.com/api/v3/ticker/24hr";
+const ALPHA123_STABILITY_URL = "https://alpha123.uk/stability/stability_feed_v3.json";
 
 // ── 状态 ──────────────────────────────────────────────────────────────────────
 let alphaTokens  = [];   // Alpha 列表（mulPoint、iconUrl 等静态字段）
 let priceMap     = {};   // symbol -> price string，每 2s 更新
 let stabilityMap = {};   // symbol -> { stability, spread }，每 3s 从订单簿计算
+let referenceStabilityMap = {}; // symbol -> { stability, spread, mul4Days }，每 3s 更新
 let statsMap     = {};   // symbol -> { percentChange24h, volume24h }，每 30s 更新
 let tokenCache   = null;
 let lastFetchTime = null;
@@ -77,7 +80,7 @@ async function fetchJson(url, opts = {}) {
     const { maxBuffer = 4 * 1024 * 1024, timeout = 12000 } = opts;
     const cmd = [
         "curl", "-sS", "--max-time", String(Math.floor(timeout / 1000) - 2),
-        "--compressed", "--proxy", PROXY,
+        "--compressed",
         "-H", '"Accept: application/json"',
         '"' + bustCache(url) + '"',
     ].join(" ");
@@ -95,7 +98,7 @@ async function fetchJson(url, opts = {}) {
 async function curlFetch(url) {
     const cmd = [
         "curl", "-sS", "--max-time", "10",
-        "--compressed", "--proxy", PROXY,
+        "--compressed",
         "-H", '"User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"',
         "-H", '"Accept: application/json"',
         '"' + bustCache(url) + '"',
@@ -127,7 +130,7 @@ function mergeAndBroadcast() {
         tokenCache = { success: true, data: merged };
         console.log(`[Price] #${fetchCount} ✦ 变化 → 推送 (变化:${changeCount}/总:${fetchCount})`);
         // 价格数据 + 最新稳定度一起推送
-        broadcast({ type: "data", success: true, data: merged, stabilityMap, ts, fetchCount, changeCount });
+        broadcast({ type: "data", success: true, data: merged, stabilityMap, referenceStabilityMap, ts, fetchCount, changeCount });
     } else {
         broadcast({ type: "ping", ts, fetchCount, changeCount });
     }
@@ -151,13 +154,19 @@ async function fetchPrices() {
     }
 }
 
-// ── 拉取 24h 统计 + 订单簿价差（每 30s，全量，maxBuffer 20MB） ──────────────
+// ── 拉取 24h 统计 + 订单簿价差（每 30s，只请求 priceMap 中有价格的现货对） ──
 // 24hr ticker 的 FULL 响应自带 bidPrice/askPrice，不需要额外请求 bookTicker
 async function fetchStats() {
     if (alphaTokens.length === 0) return;
     const alphaSet = new Set(alphaTokens.map(t => t.symbol + "USDT"));
+
+    // 只请求已有价格的现货对，避免全量下载（5-10MB → ~50KB）
+    const spotSymbols = Object.keys(priceMap).map(s => s + "USDT").filter(s => alphaSet.has(s));
+    if (spotSymbols.length === 0) return;
+
+    const filteredUrl = BINANCE_TICKER_URL + "?symbols=" + encodeURIComponent(JSON.stringify(spotSymbols));
     try {
-        const data = await fetchJson(BINANCE_TICKER_URL, { maxBuffer: 20 * 1024 * 1024, timeout: 25000 });
+        const data = await fetchJson(filteredUrl, { maxBuffer: 4 * 1024 * 1024, timeout: 15000 });
         if (!Array.isArray(data)) return;
 
         const newStabilityMap = {};
@@ -206,6 +215,33 @@ async function fetchStats() {
     }
 }
 
+async function fetchReferenceStability() {
+    try {
+        const json = await fetchJson(ALPHA123_STABILITY_URL, { maxBuffer: 2 * 1024 * 1024, timeout: 5000 });
+        const items = Array.isArray(json?.items) ? json.items : [];
+        const nextMap = {};
+
+        for (const item of items) {
+            const symbol = item?.n?.split("/")?.[0];
+            if (!symbol) continue;
+            nextMap[symbol] = {
+                stability: item.st ?? null,
+                spread: item.spr ?? null,
+                mul4Days: item.md ?? null,
+            };
+        }
+
+        referenceStabilityMap = nextMap;
+        broadcast({
+            type: "reference_stability",
+            referenceStabilityMap: nextMap,
+            ts: new Date().toISOString(),
+        });
+    } catch (err) {
+        console.error("[Reference] 拉取失败:", (err.message || "").slice(0, 80));
+    }
+}
+
 // ── 刷新 Alpha 列表（每 60s） ─────────────────────────────────────────────────
 async function refreshAlphaList() {
     try {
@@ -250,7 +286,7 @@ const server = http.createServer((req, res) => {
             const ts = lastFetchTime ? lastFetchTime.toISOString() : new Date().toISOString();
             res.write("data: " + JSON.stringify({
                 type: "data", success: true,
-                data: tokenCache.data, stabilityMap, ts, fetchCount, changeCount,
+                data: tokenCache.data, stabilityMap, referenceStabilityMap, ts, fetchCount, changeCount,
             }) + "\n\n");
         }
 
@@ -280,6 +316,12 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    if (url.pathname === "/api/reference-stability") {
+        res.writeHead(200, corsHeaders({ "Content-Type": "application/json" }));
+        res.end(JSON.stringify({ success: true, data: referenceStabilityMap }));
+        return;
+    }
+
     if (url.pathname === "/api/health") {
         res.writeHead(200, corsHeaders({ "Content-Type": "application/json" }));
         res.end(JSON.stringify({
@@ -287,6 +329,7 @@ const server = http.createServer((req, res) => {
             alphaCount:    alphaTokens.length,
             priceCount:    Object.keys(priceMap).length,
             spreadCount:   Object.keys(stabilityMap).length,
+            referenceCount:Object.keys(referenceStabilityMap).length,
             statsCount:    Object.keys(statsMap).length,
             lastFetch:     lastFetchTime ? lastFetchTime.toISOString() : null,
             fetchCount, changeCount,
@@ -306,10 +349,14 @@ server.listen(PORT, async () => {
     console.log(`   Alpha 列表：  每 ${ALPHA_FETCH_INTERVAL_MS / 1000}s\n`);
 
     await refreshAlphaList();
-    await fetchStats();    // 拉统计 + 计算稳定度
-    await fetchPrices();   // 开始推送
+    await fetchReferenceStability();
+
+    // 先拿到一轮价格，再立刻补齐统计/稳定度，避免首屏数据缺字段。
+    await fetchPrices();
+    await fetchStats();
 
     setInterval(refreshAlphaList, ALPHA_FETCH_INTERVAL_MS);
     setInterval(fetchStats,       STATS_FETCH_INTERVAL_MS);
     setInterval(fetchPrices,      PRICE_FETCH_INTERVAL_MS);
+    setInterval(fetchReferenceStability, REFERENCE_FETCH_INTERVAL_MS);
 });

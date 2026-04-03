@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import "./index.css";
-import { fetchAlphaTokens, fetchAlpha123Data } from "./api/binanceAlpha";
+import { fetchAlphaTokens, fetchAlpha123Data, fetchStabilityFeed, fetchLocalReferenceStability } from "./api/binanceAlpha";
 import Header from "./components/Header";
 import FilterBar from "./components/FilterBar";
 import Top3Bar from "./components/Top3Bar";
@@ -23,6 +23,7 @@ export default function App() {
     const [baselinePrices, setBaselinePrices] = useState({});
     const [baselineTime, setBaselineTime] = useState(null);
     const [stabilityMap, setStabilityMap] = useState({});
+    const [referenceStabilityMap, setReferenceStabilityMap] = useState({});
     const [top3, setTop3] = useState([]);
     const [bnbPrice, setBnbPrice] = useState(null);
     const [sseActive, setSseActive] = useState(false); // SSE 是否已连接
@@ -83,10 +84,13 @@ export default function App() {
                         if (msg.type === "data" && msg.success && msg.data) {
                             processTokenData(msg.data);
                             if (msg.stabilityMap) setStabilityMap(msg.stabilityMap);
+                            if (msg.referenceStabilityMap) setReferenceStabilityMap(msg.referenceStabilityMap);
                             setLoading(false);
                         } else if (msg.type === "stability" && msg.stabilityMap) {
                             // 订单簿价差独立推送
                             setStabilityMap(msg.stabilityMap);
+                        } else if (msg.type === "reference_stability" && msg.referenceStabilityMap) {
+                            setReferenceStabilityMap(msg.referenceStabilityMap);
                         }
                         // type === "ping" 时只更新检查时间
                     } catch (_) {}
@@ -110,19 +114,27 @@ export default function App() {
         };
     }, [processTokenData]);
 
-    // ── 辅助数据（Top3/BNB价格），SSE 覆盖稳定度，这里只管 alpha123 数据 ──
+    // ── 辅助数据（Top3/BNB价格 + 第三方稳定度参考） ───────────────────────
     const fetchAuxData = useCallback(async () => {
-        try {
-            const result = await fetchAlpha123Data();
-            setTop3(result.top3);
-            setBnbPrice(result.bnbPrice);
-        } catch (_) {}
+        const [result, referenceStability] = await Promise.allSettled([
+            fetchAlpha123Data(),
+            fetchLocalReferenceStability().catch(() => fetchStabilityFeed()),
+        ]);
+
+        if (result.status === "fulfilled") {
+            setTop3(result.value.top3);
+            setBnbPrice(result.value.bnbPrice);
+        }
+
+        if (referenceStability.status === "fulfilled") {
+            setReferenceStabilityMap(referenceStability.value);
+        }
     }, []);
 
     // 启动时拉辅助数据，之后每 60s 刷新一次
     useEffect(() => {
         fetchAuxData();
-        const t = setInterval(fetchAuxData, 60_000);
+        const t = setInterval(fetchAuxData, 1_000);
         return () => clearInterval(t);
     }, [fetchAuxData]);
 
@@ -130,8 +142,12 @@ export default function App() {
     const fetchTokens = useCallback(async () => {
         setIsRefreshing(true);
         try {
-            const data = await fetchAlphaTokens();
+            const [data, fallbackStability] = await Promise.all([
+                fetchAlphaTokens(),
+                fetchLocalReferenceStability().catch(() => fetchStabilityFeed()).catch(() => null),
+            ]);
             processTokenData(data);
+            if (fallbackStability) setReferenceStabilityMap(fallbackStability);
         } catch (e) {
             setError(e.message || "获取代币数据失败");
         } finally {
@@ -266,6 +282,7 @@ export default function App() {
                 newTokenIds={newTokenIds}
                 baselinePrices={baselinePrices}
                 stabilityMap={stabilityMap}
+                referenceStabilityMap={referenceStabilityMap}
             />
         </div>
     );
