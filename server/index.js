@@ -120,16 +120,22 @@ async function fetchPrices() {
 }
 
 // ── 拉取 24h 涨跌幅 + 成交量（每 30s） ───────────────────────────────────────
+// 有些 Alpha 代币不在 Binance 现货，带 symbols 过滤会触发 400，
+// 因此直接拉全量 ticker（--max-time 放宽，maxBuffer 调大）
 async function fetchStats() {
     if (alphaTokens.length === 0) return;
-    // 只拉 Alpha 代币，避免全量 ticker 超出 execAsync 缓冲区
-    const symbols = JSON.stringify(alphaTokens.map(t => t.symbol + "USDT"));
-    const url = `${BINANCE_TICKER_URL}?symbols=${encodeURIComponent(symbols)}`;
+    const alphaSet = new Set(alphaTokens.map(t => t.symbol + "USDT"));
+    const cmd = [
+        "curl", "-sS", "--max-time", "20", "--compressed",
+        "-H", '"Accept: application/json"',
+        '"' + BINANCE_TICKER_URL + '"',
+    ].join(" ");
     try {
-        const data = await fetchJson(url);
+        const { stdout } = await execAsync(cmd, { timeout: 25000, maxBuffer: 20 * 1024 * 1024 });
+        const data = JSON.parse(stdout);
         if (!Array.isArray(data)) return;
         for (const item of data) {
-            if (item.symbol?.endsWith("USDT")) {
+            if (alphaSet.has(item.symbol)) {
                 statsMap[item.symbol.slice(0, -4)] = {
                     percentChange24h: item.priceChangePercent,
                     volume24h: item.quoteVolume,
