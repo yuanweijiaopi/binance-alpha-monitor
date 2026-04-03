@@ -81,8 +81,15 @@ async function fetchJson(url, opts = {}) {
         "-H", '"Accept: application/json"',
         '"' + bustCache(url) + '"',
     ].join(" ");
-    const { stdout } = await execAsync(cmd, { timeout, maxBuffer });
-    return JSON.parse(stdout);
+    try {
+        const { stdout } = await execAsync(cmd, { timeout, maxBuffer });
+        return JSON.parse(stdout);
+    } catch (err) {
+        console.error("[fetchJson] CMD:", cmd);
+        console.error("[fetchJson] ERR:", err.message);
+        if (err.stderr) console.error("[fetchJson] STDERR:", err.stderr);
+        throw err;
+    }
 }
 
 async function curlFetch(url) {
