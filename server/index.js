@@ -66,13 +66,19 @@ function classifyByChange(changePercent) {
 }
 
 // ── curl 封装（自动走系统代理） ───────────────────────────────────────────────
+// 给 URL 加时间戳参数，防止代理缓存返回旧数据
+function bustCache(url) {
+    return url + (url.includes("?") ? "&" : "?") + "_t=" + Date.now();
+}
+
 async function fetchJson(url, opts = {}) {
     const { maxBuffer = 4 * 1024 * 1024, timeout = 12000 } = opts;
     const cmd = [
         "curl", "-sS", "--max-time", String(Math.floor(timeout / 1000) - 2),
         "--compressed",
         "-H", '"Accept: application/json"',
-        '"' + url + '"',
+        "-H", '"Cache-Control: no-cache"',
+        '"' + bustCache(url) + '"',
     ].join(" ");
     const { stdout } = await execAsync(cmd, { timeout, maxBuffer });
     return JSON.parse(stdout);
@@ -83,7 +89,8 @@ async function curlFetch(url) {
         "curl", "-sS", "--max-time", "10", "--compressed",
         "-H", '"User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"',
         "-H", '"Accept: application/json"',
-        '"' + url + '"',
+        "-H", '"Cache-Control: no-cache"',
+        '"' + bustCache(url) + '"',
     ].join(" ");
     const { stdout } = await execAsync(cmd, { timeout: 12000 });
     return JSON.parse(stdout);
