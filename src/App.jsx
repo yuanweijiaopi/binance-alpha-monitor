@@ -82,9 +82,10 @@ export default function App() {
 
                         if (msg.type === "data" && msg.success && msg.data) {
                             processTokenData(msg.data);
+                            if (msg.stabilityMap) setStabilityMap(msg.stabilityMap);
                             setLoading(false);
                         } else if (msg.type === "stability" && msg.stabilityMap) {
-                            // 服务器推送的稳定度/价差更新
+                            // 订单簿价差独立推送
                             setStabilityMap(msg.stabilityMap);
                         }
                         // type === "ping" 时只更新检查时间
