@@ -17,14 +17,12 @@ const execAsync = promisify(exec);
 const PORT = 3001;
 
 const PRICE_FETCH_INTERVAL_MS  =  2_000;
-const SPREAD_FETCH_INTERVAL_MS =  3_000;
 const STATS_FETCH_INTERVAL_MS  = 30_000;
 const ALPHA_FETCH_INTERVAL_MS  = 60_000;
 
-const BINANCE_ALPHA_URL      = "https://www.binance.com/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list";
-const BINANCE_PRICE_URL      = "https://api.binance.com/api/v3/ticker/price";
-const BINANCE_BOOKTICKER_URL = "https://api.binance.com/api/v3/bookTicker";
-const BINANCE_TICKER_URL     = "https://api.binance.com/api/v3/ticker/24hr";
+const BINANCE_ALPHA_URL  = "https://www.binance.com/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list";
+const BINANCE_PRICE_URL  = "https://api.binance.com/api/v3/ticker/price";
+const BINANCE_TICKER_URL = "https://api.binance.com/api/v3/ticker/24hr";
 
 // ── 状态 ──────────────────────────────────────────────────────────────────────
 let alphaTokens  = [];   // Alpha 列表（mulPoint、iconUrl 等静态字段）
@@ -129,52 +127,41 @@ async function fetchPrices() {
     }
 }
 
-// ── 拉取订单簿计算价差/稳定度（每 3s，weight=2） ─────────────────────────────
-async function fetchSpread() {
-    if (alphaTokens.length === 0) return;
-    const alphaSet = new Set(alphaTokens.map(t => t.symbol + "USDT"));
-    try {
-        const data = await fetchJson(BINANCE_BOOKTICKER_URL, { maxBuffer: 20 * 1024 * 1024, timeout: 25000 });
-        if (!Array.isArray(data)) return;
-
-        const newMap = {};
-        for (const item of data) {
-            if (!alphaSet.has(item.symbol)) continue;
-            const sym = item.symbol.slice(0, -4);
-            const bid = parseFloat(item.bidPrice);
-            const ask = parseFloat(item.askPrice);
-            if (!bid || !ask || bid <= 0 || ask <= 0) {
-                newMap[sym] = { stability: "red:no_trade", spread: null };
-                continue;
-            }
-            const mid = (bid + ask) / 2;
-            const spreadBps = parseFloat(((ask - bid) / mid * 10000).toFixed(4));
-            newMap[sym] = { spread: spreadBps, stability: classifyStability(spreadBps) };
-        }
-        stabilityMap = newMap;
-        // 推送稳定度更新（不管价格是否变化，稳定度独立推送）
-        broadcast({ type: "stability", stabilityMap: newMap, ts: new Date().toISOString() });
-    } catch (err) {
-        console.error("[Spread] 拉取失败:", (err.message || "").slice(0, 80));
-    }
-}
-
-// ── 拉取 24h 涨跌幅 + 成交量（每 30s，全量，maxBuffer 20MB） ─────────────────
+// ── 拉取 24h 统计 + 订单簿价差（每 30s，全量，maxBuffer 20MB） ──────────────
+// 24hr ticker 的 FULL 响应自带 bidPrice/askPrice，不需要额外请求 bookTicker
 async function fetchStats() {
     if (alphaTokens.length === 0) return;
     const alphaSet = new Set(alphaTokens.map(t => t.symbol + "USDT"));
     try {
         const data = await fetchJson(BINANCE_TICKER_URL, { maxBuffer: 20 * 1024 * 1024, timeout: 25000 });
         if (!Array.isArray(data)) return;
+
+        const newStabilityMap = {};
         for (const item of data) {
-            if (alphaSet.has(item.symbol)) {
-                statsMap[item.symbol.slice(0, -4)] = {
-                    percentChange24h: item.priceChangePercent,
-                    volume24h: item.quoteVolume,
-                };
+            if (!alphaSet.has(item.symbol)) continue;
+            const sym = item.symbol.slice(0, -4);
+
+            // 24h 涨跌 + 成交量
+            statsMap[sym] = {
+                percentChange24h: item.priceChangePercent,
+                volume24h: item.quoteVolume,
+            };
+
+            // 订单簿价差 → 稳定度（bid/ask 来自 24hr ticker FULL 响应）
+            const bid = parseFloat(item.bidPrice);
+            const ask = parseFloat(item.askPrice);
+            if (bid > 0 && ask > 0) {
+                const mid = (bid + ask) / 2;
+                const spreadBps = parseFloat(((ask - bid) / mid * 10000).toFixed(4));
+                newStabilityMap[sym] = { spread: spreadBps, stability: classifyStability(spreadBps) };
+            } else {
+                newStabilityMap[sym] = { spread: null, stability: "red:no_trade" };
             }
         }
-        console.log(`[Stats] 24h 统计更新：${Object.keys(statsMap).length} 个`);
+
+        stabilityMap = newStabilityMap;
+        console.log(`[Stats] 更新：${Object.keys(statsMap).length} 个代币，价差已计算`);
+        broadcast({ type: "stability", stabilityMap: newStabilityMap, ts: new Date().toISOString() });
     } catch (err) {
         console.error("[Stats] 拉取失败:", (err.message || "").slice(0, 80));
     }
@@ -275,18 +262,15 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, async () => {
     console.log(`\n🚀 本地代理服务器启动 → http://localhost:${PORT}`);
-    console.log(`   实时价格：  每 ${PRICE_FETCH_INTERVAL_MS / 1000}s`);
-    console.log(`   订单簿价差：每 ${SPREAD_FETCH_INTERVAL_MS / 1000}s  ← 自算稳定度，不依赖三方`);
-    console.log(`   24h 统计：  每 ${STATS_FETCH_INTERVAL_MS / 1000}s`);
-    console.log(`   Alpha 列表：每 ${ALPHA_FETCH_INTERVAL_MS / 1000}s\n`);
+    console.log(`   实时价格：     每 ${PRICE_FETCH_INTERVAL_MS / 1000}s`);
+    console.log(`   24h统计+价差：每 ${STATS_FETCH_INTERVAL_MS / 1000}s  ← bid/ask 来自 Binance ticker`);
+    console.log(`   Alpha 列表：  每 ${ALPHA_FETCH_INTERVAL_MS / 1000}s\n`);
 
     await refreshAlphaList();
-    await fetchStats();
-    await fetchSpread();   // 先算一次稳定度
+    await fetchStats();    // 拉统计 + 计算稳定度
     await fetchPrices();   // 开始推送
 
     setInterval(refreshAlphaList, ALPHA_FETCH_INTERVAL_MS);
     setInterval(fetchStats,       STATS_FETCH_INTERVAL_MS);
-    setInterval(fetchSpread,      SPREAD_FETCH_INTERVAL_MS);
     setInterval(fetchPrices,      PRICE_FETCH_INTERVAL_MS);
 });
